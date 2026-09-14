@@ -112,8 +112,15 @@ class UserResource(Resource):
 
     @jwt_required()
     def get(self, user_id=None):
+        current_user_id = get_jwt_identity()
+        current_user = User.query.get(current_user_id)
+
+        if not current_user:
+            return {"message": "Invalid user"}, 404
+
         if user_id:
             user = User.query.get(user_id)
+
             if not user:
                 return {"message": "User not found"}, 404
 
@@ -121,16 +128,26 @@ class UserResource(Resource):
                 "id": user.id,
                 "username": user.username,
                 "email": user.email,
-                "role":user.role
+                "role": user.role
             }, 200
 
-        # else, get all users
+        # Get all users — admin only
+        if current_user.role != "admin":
+            return {
+                "Access denied": "You are not authorized to view all users"
+            }, 403
+
         users = User.query.all()
+
         return [
-            {"id": u.id, "username": u.username, "email": u.email, "role":u.role}
+            {
+                "id": u.id,
+                "username": u.username,
+                "email": u.email,
+                "role": u.role
+            }
             for u in users
         ], 200
-
     @jwt_required()
     def patch(self, user_id):
         current_user_id = get_jwt_identity()
@@ -146,7 +163,7 @@ class UserResource(Resource):
         data = self.parser.parse_args()
 
         # Normal users can only update *their own* username or email
-        if current_user.role != "Admin" and current_user.id != user.id:
+        if current_user.role != "admin" and current_user.id != user.id:
             return {"message": "You are not authorized to update this user"}, 403
 
         if data["username"]:
@@ -158,6 +175,10 @@ class UserResource(Resource):
         if data["role"]:
             if current_user.role != "admin":
                 return {"message": "Only admins can change roles"}, 403
+
+            if data["role"] not in ["user", "admin"]:
+                return {"message": "Invalid role"}, 400
+
             user.role = data["role"]
 
         db.session.commit()
@@ -185,13 +206,13 @@ class UserResource(Resource):
             return {"message": "User not found"}, 404
 
         # Allow self-deletion OR admin deletion
-        if current_user.id != user.id and current_user.role != "admin":
-            return {"message": "You are not authorized to delete this user"}, 403
+        if current_user.role != "admin" and current_user.id != user.id:
+            return {"message": "You are not authorized to delete this user-account"}, 403
 
         db.session.delete(user)
         db.session.commit()
 
-        return {"message": "User deleted successfully"}, 200
+        return {"message": "User-account deleted successfully"}, 200
 
 class AdminResource(Resource):
     @jwt_required()
