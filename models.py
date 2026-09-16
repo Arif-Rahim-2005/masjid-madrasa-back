@@ -56,3 +56,23 @@ class User(db.Model):
             self.password_hash,
             password
         )
+
+class MasjidPrograms(db.Model):
+    __tablename__ = "masjid_programs"
+    id = db.Column(db.Integer, primary_key=True)
+    # program_name = db.Column(db.String(100), nullable=False)
+    # program_schedule = db.Column(db.String(500), nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    # book = db.Column(db.String(200), nullable=True)
+    translations = db.relationship('MasjidProgramsTranslation', backref='program', cascade = "all, delete-orphan")
+
+class MasjidProgramsTranslation(db.Model):
+    __tablename__= "masjid_programs_translations"
+    id = db.Column(db.Integer, primary_key=True)
+    program_id = db.Column(db.Integer, db.ForeignKey('masjid_programs.id'), nullable=False)
+    program_name = db.Column(db.String(100), nullable=False)
+    program_schedule = db.Column(db.String(500), nullable=False)
+    language = db.Column (db.String(5), nullable=False)
+    book = db.Column(db.String(200), nullable=True)
+    __table_args__ = (db.UniqueConstraint('program_id', 'language', name='uq_program_language'),)
+

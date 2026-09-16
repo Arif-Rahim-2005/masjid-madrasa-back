@@ -9,6 +9,7 @@ from flask_restful import Api
 # from flask_sqlalchemy import SQLAlchemy
 from models import db
 from resources.users import SignupResource, LogInResource, UserResource, AdminResource
+from resources.MasjidPrograms import AddProgram, DeleteProgram, UpdateProgram
 
 
 
@@ -55,6 +56,9 @@ api.add_resource(SignupResource, "/signup")
 api.add_resource(LogInResource, "/login")
 api.add_resource(UserResource, "/users", "/users/<int:user_id>")
 api.add_resource(AdminResource, "/me")
+api.add_resource(AddProgram, "/masjid-programs")
+api.add_resource(UpdateProgram, "/masjid-programs/<int:program_id>")
+api.add_resource(DeleteProgram, "/masjid-programs/<int:program_id>")
 
 if __name__ == "__main__":
     app.run(debug=True)
