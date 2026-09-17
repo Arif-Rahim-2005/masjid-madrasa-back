@@ -76,3 +76,29 @@ class MasjidProgramsTranslation(db.Model):
     book = db.Column(db.String(200), nullable=True)
     __table_args__ = (db.UniqueConstraint('program_id', 'language', name='uq_program_language'),)
 
+class MadrasaProgramCategories(db.Model):
+    __tablename__ = "madrasa_program_categories"
+
+    id = db.Column(db.Integer, primary_key = True)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+    translations = db.relationship(
+        "MadrasaProgramCategoriesTranslation",
+        backref="category",
+        cascade="all, delete-orphan"
+    )
+
+class MadrasaProgramCategoriesTranslation(db.Model):
+    __tablename__= "madrasa_program_categories_translations"
+
+    id = db.Column(db.Integer, primary_key = True)
+    category_id = db.Column(db.Integer, db.ForeignKey("madrasa_program_categories.id"), nullable=False )
+    name = db.Column (db.String(100), nullable=False)
+    language = db.Column(db.String(10), nullable=False)
+    __table_args__ = (
+        db.UniqueConstraint(
+            "category_id",
+            "language",
+            name="uq_category_language"
+        ),
+    )

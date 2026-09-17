@@ -10,6 +10,7 @@ from flask_restful import Api
 from models import db
 from resources.users import SignupResource, LogInResource, UserResource, AdminResource
 from resources.MasjidPrograms import AddProgram, DeleteProgram, UpdateProgram
+from resources.MadrasaProgramCategories import AddCategory, GetCategories, UpdateCategory, DeleteCategory
 
 
 
@@ -30,7 +31,6 @@ app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
 # -------------------------
 
 # db = SQLAlchemy()
-api= Api(app)
 migrate = Migrate()
 jwt = JWTManager()
 api = Api(app)
@@ -59,6 +59,10 @@ api.add_resource(AdminResource, "/me")
 api.add_resource(AddProgram, "/masjid-programs")
 api.add_resource(UpdateProgram, "/masjid-programs/<int:program_id>")
 api.add_resource(DeleteProgram, "/masjid-programs/<int:program_id>")
+api.add_resource(AddCategory, "/madrasa-program-categories")
+api.add_resource(GetCategories, "/madrasa-program-categories")
+api.add_resource(UpdateCategory, "/madrasa-program-categories/<int:category_id>")
+api.add_resource(DeleteCategory, "/madrasa-program-categories/<int:category_id>")
 
 if __name__ == "__main__":
     app.run(debug=True)
