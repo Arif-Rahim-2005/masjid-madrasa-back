@@ -11,7 +11,7 @@ from models import db
 from resources.users import SignupResource, LogInResource, UserResource, AdminResource
 from resources.MasjidPrograms import AddProgram, DeleteProgram, UpdateProgram
 from resources.MadrasaProgramCategories import AddCategory, GetCategories, UpdateCategory, DeleteCategory
-
+from resources.MadrasaPrograms import AddMadrasaProgram, GetMadrasaPrograms, UpdateMadrasaProgram, DeleteMadrasaProgram
 
 
 load_dotenv()
@@ -63,6 +63,10 @@ api.add_resource(AddCategory, "/madrasa-program-categories")
 api.add_resource(GetCategories, "/madrasa-program-categories")
 api.add_resource(UpdateCategory, "/madrasa-program-categories/<int:category_id>")
 api.add_resource(DeleteCategory, "/madrasa-program-categories/<int:category_id>")
+api.add_resource(AddMadrasaProgram, "/madrasa-programs")
+api.add_resource(GetMadrasaPrograms, "/madrasa-programs")
+api.add_resource(UpdateMadrasaProgram, "/madrasa-programs/<int:program_id>")
+api.add_resource(DeleteMadrasaProgram, "/madrasa-programs/<int:program_id>")
 
 if __name__ == "__main__":
     app.run(debug=True)

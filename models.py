@@ -81,6 +81,7 @@ class MadrasaProgramCategories(db.Model):
 
     id = db.Column(db.Integer, primary_key = True)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    monthly_fee = db.Column(db.Numeric(10, 2), nullable=False)
 
     translations = db.relationship(
         "MadrasaProgramCategoriesTranslation",
@@ -100,5 +101,47 @@ class MadrasaProgramCategoriesTranslation(db.Model):
             "category_id",
             "language",
             name="uq_category_language"
+        ),
+    )
+
+class MadrasaPrograms(db.Model):
+    __tablename__ = "madrasa_programs"
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    category_id = db.Column(
+        db.Integer,
+        db.ForeignKey("madrasa_program_categories.id"),
+        nullable=False
+    )
+
+    created_at = db.Column(
+        db.DateTime,
+        nullable=False,
+        default=datetime.utcnow
+    )
+
+    translations = db.relationship(
+    "MadrasaProgramTranslations",
+    backref="program",
+    cascade="all, delete-orphan"
+    )
+
+class MadrasaProgramTranslations(db.Model):
+    __tablename__ = "madrasa_programs_translations"
+
+    id = db.Column(db.Integer, primary_key =True, nullable=False)
+    program_id = db.Column(db.Integer, db.ForeignKey("madrasa_programs.id"), nullable=False)
+    program_name = db.Column(db.String(50), nullable=False)
+    subjects=db.Column(db.String(500), nullable=False)
+    program_schedule = db.Column(db.String(500), nullable=False)
+
+    language=db.Column(db.String(5), nullable=False)
+
+    __table_args__ = (
+        db.UniqueConstraint(
+            "program_id",
+            "language",
+            name="uq_madrasa_program_language"
         ),
     )

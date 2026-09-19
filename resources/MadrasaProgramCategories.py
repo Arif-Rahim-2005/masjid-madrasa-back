@@ -9,6 +9,7 @@ class AddCategory(Resource):
     parser.add_argument("name_en",required=True)
     parser.add_argument("name_sw",required=True)
     parser.add_argument("name_ar",required=True)
+    parser.add_argument("monthly_fee",required=True, type=float)
 
     @jwt_required()
     def post(self):
@@ -29,7 +30,9 @@ class AddCategory(Resource):
 
 
         try:
-            new_category = MadrasaProgramCategories()
+            new_category = MadrasaProgramCategories(
+                monthly_fee=data["monthly_fee"]
+            )
 
             db.session.add(new_category)
             db.session.flush()
@@ -105,7 +108,8 @@ class GetCategories(Resource):
                 result.append({
                     "category_id": category.id,
                     "category_name": translation.name,
-                    "category_language": translation.language
+                    "category_language": translation.language,
+                    "monthly_fee": float(category.monthly_fee)
                 })
 
         if not result:
@@ -120,6 +124,7 @@ class UpdateCategory(Resource):
     parser.add_argument("name_en", required=False)
     parser.add_argument("name_sw", required=False)
     parser.add_argument("name_ar", required=False)
+    parser.add_argument ("monthly_fee", required= False, type=float)
 
     @jwt_required()
     def patch(self, category_id):
@@ -159,6 +164,9 @@ class UpdateCategory(Resource):
                 if translation:
                     translation.name = name
 
+        if data["monthly_fee"] is not None:
+            category.monthly_fee = data["monthly_fee"]
+        
         db.session.commit()
 
         return {
