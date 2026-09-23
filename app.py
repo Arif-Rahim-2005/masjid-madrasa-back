@@ -1,5 +1,5 @@
 import os
-
+import cloudinary
 from dotenv import load_dotenv
 from flask import Flask, jsonify
 from flask_cors import CORS
@@ -12,9 +12,16 @@ from resources.users import SignupResource, LogInResource, UserResource, AdminRe
 from resources.MasjidPrograms import AddProgram, DeleteProgram, UpdateProgram
 from resources.MadrasaProgramCategories import AddCategory, GetCategories, UpdateCategory, DeleteCategory
 from resources.MadrasaPrograms import AddMadrasaProgram, GetMadrasaPrograms, UpdateMadrasaProgram, DeleteMadrasaProgram
-
+from resources.documents import AddDocument, GetDocuments, DeleteDocuments
+from resources.images import AddImage, GetImages, DeleteImage
 
 load_dotenv()
+
+cloudinary.config(
+    cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
+    api_key=os.getenv("CLOUDINARY_API_KEY"),
+    api_secret=os.getenv("CLOUDINARY_API_SECRET")
+)
 
 app = Flask(__name__)
 
@@ -67,6 +74,12 @@ api.add_resource(AddMadrasaProgram, "/madrasa-programs")
 api.add_resource(GetMadrasaPrograms, "/madrasa-programs")
 api.add_resource(UpdateMadrasaProgram, "/madrasa-programs/<int:program_id>")
 api.add_resource(DeleteMadrasaProgram, "/madrasa-programs/<int:program_id>")
+api.add_resource(AddDocument, "/documents")
+api.add_resource(GetDocuments, "/documents")
+api.add_resource(DeleteDocuments,"/documents/<int:document_id>")
+api.add_resource(AddImage, "/images")
+api.add_resource(GetImages, "/images")
+api.add_resource(DeleteImage, "/images/<int:image_id>")
 
 if __name__ == "__main__":
     app.run(debug=True)

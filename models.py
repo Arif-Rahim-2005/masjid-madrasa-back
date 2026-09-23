@@ -145,3 +145,31 @@ class MadrasaProgramTranslations(db.Model):
             name="uq_madrasa_program_language"
         ),
     )
+
+
+class Document(db.Model):
+    __tablename__="documents"
+
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(500), nullable=False)
+    filename = db.Column(db.String(500), nullable=False)
+    url = db.Column(db.String(500), nullable=False)
+    public_id = db.Column(db.String(500), nullable=False)
+    document_type = db.Column(db.String(50), nullable=False)
+    language = db.Column(db.String(10), nullable=True)
+    uploaded_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow,onupdate=datetime.utcnow, nullable=False)
+
+class Image(db.Model):
+    __tablename__ = "images"
+
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    filename = db.Column(db.String(500), nullable=False)
+    url = db.Column(db.String(500), nullable=False)
+    public_id = db.Column(db.String(500), nullable=False)
+    uploaded_at = db.Column(
+        db.DateTime,
+        default=datetime.utcnow,
+        nullable=False
+    )
