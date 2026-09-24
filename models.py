@@ -173,3 +173,56 @@ class Image(db.Model):
         default=datetime.utcnow,
         nullable=False
     )
+
+class Announcement(db.Model):
+    __tablename__ = "announcements"
+
+    id = db.Column(db.Integer, primary_key=True)
+    created_at = db.Column(
+        db.DateTime,
+        nullable=False,
+        default=datetime.utcnow
+    )
+    updated_at = db.Column(
+        db.DateTime,
+        nullable=False,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow
+    )
+
+    image_id = db.Column(
+    db.Integer,
+    db.ForeignKey("images.id"),
+    nullable=True
+    )
+    image = db.relationship("Image", backref="announcements")
+
+    translations = db.relationship(
+        "AnnouncementTranslation",
+        backref="announcement",
+        cascade="all, delete-orphan"
+    )
+
+
+class AnnouncementTranslation(db.Model):
+    __tablename__ = "announcement_translations"
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    announcement_id = db.Column(
+        db.Integer,
+        db.ForeignKey("announcements.id"),
+        nullable=False
+    )
+
+    title = db.Column(db.String(200), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    language = db.Column(db.String(5), nullable=False)
+
+    __table_args__ = (
+        db.UniqueConstraint(
+            "announcement_id",
+            "language",
+            name="uq_announcement_language"
+        ),
+    )
