@@ -1,5 +1,3 @@
-from gettext import translation
-
 from flask import request
 from flask_restful import Resource
 from models import MasjidPrograms, MasjidProgramsTranslation, db, User
@@ -11,6 +9,7 @@ from flask_restful import reqparse
 
 class AddProgram(Resource):
     parser = reqparse.RequestParser()
+    parser.add_argument("image_id", type=int, required=True)
 
     parser.add_argument("program_name_en", required=True)
     parser.add_argument("program_schedule_en", required=True)
@@ -48,6 +47,7 @@ class AddProgram(Resource):
         try:
             # Create the main program
             new_program = MasjidPrograms(
+                image_id=data["image_id"],
                 created_at=datetime.utcnow()
                 )
 
@@ -127,6 +127,10 @@ class AddProgram(Resource):
                 program_data = {
                     "id": program.id,
                     "created_at": program.created_at.isoformat(),
+                    "image": {
+                        "id": program.image.id,
+                        "url": program.image.url
+                    } if program.image else None,
                     "translation": {
                         "program_name": translation.program_name,
                         "program_schedule": translation.program_schedule,
@@ -139,6 +143,48 @@ class AddProgram(Resource):
 
         return result, 200
 
+
+class GetAllPrograms(Resource):
+
+    @jwt_required()
+    def get(self):
+        current_user_id = get_jwt_identity()
+        current_user = User.query.get(current_user_id)
+
+        if not current_user:
+            return {"message": "Invalid user"}, 404
+
+        if current_user.role != "admin":
+            return {"message": "Access denied"}, 403
+
+        programs = MasjidPrograms.query.all()
+
+        result = []
+
+        for program in programs:
+
+            translations = {}
+
+            for translation in program.translations:
+                translations[translation.language] = {
+                    "program_name": translation.program_name,
+                    "program_schedule": translation.program_schedule,
+                    "book": translation.book
+                }
+
+            result.append({
+                "id": program.id,
+                "created_at": program.created_at.isoformat(),
+                "image": {
+                    "id": program.image.id,
+                    "url": program.image.url
+                } if program.image else None,
+                "translations": translations
+            })
+
+        return result, 200
+
+        
 class UpdateProgram(Resource):
 
     parser = reqparse.RequestParser()
@@ -154,6 +200,8 @@ class UpdateProgram(Resource):
     parser.add_argument("program_name_ar")
     parser.add_argument("program_schedule_ar")
     parser.add_argument("book_ar")
+
+    parser.add_argument("image_id", type=int)
 
     @jwt_required()
     def patch(self, program_id):
@@ -216,7 +264,7 @@ class UpdateProgram(Resource):
                         program_name=translation_data["program_name"],
                         program_schedule=translation_data["program_schedule"],
                         language=lang,
-                        book=translation_data["book"]
+                        book=translation_data["book"]                    
                     )
                     db.session.add(new_translation)
 

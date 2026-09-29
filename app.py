@@ -9,8 +9,8 @@ from flask_restful import Api
 # from flask_sqlalchemy import SQLAlchemy
 from models import db
 from resources.users import SignupResource, LogInResource, UserResource, AdminResource
-from resources.MasjidPrograms import AddProgram, DeleteProgram, UpdateProgram
-from resources.MadrasaProgramCategories import AddCategory, GetCategories, UpdateCategory, DeleteCategory
+from resources.MasjidPrograms import AddProgram, DeleteProgram, GetAllPrograms, UpdateProgram
+from resources.MadrasaProgramCategories import AddCategory, GetAllMadrasaProgramCategories, GetCategories, UpdateCategory, DeleteCategory
 from resources.MadrasaPrograms import AddMadrasaProgram, GetMadrasaPrograms, UpdateMadrasaProgram, DeleteMadrasaProgram
 from resources.documents import AddDocument, GetDocuments, DeleteDocuments
 from resources.images import AddImage, GetImages, DeleteImage
@@ -66,6 +66,14 @@ api.add_resource(LogInResource, "/login")
 api.add_resource(UserResource, "/users", "/users/<int:user_id>")
 api.add_resource(AdminResource, "/me")
 api.add_resource(AddProgram, "/masjid-programs")
+api.add_resource(
+    GetAllPrograms,
+    "/masjid-programs/all"
+)
+api.add_resource(
+    GetAllMadrasaProgramCategories,
+    "/madrasa-program-categories/all"
+)
 api.add_resource(UpdateProgram, "/masjid-programs/<int:program_id>")
 api.add_resource(DeleteProgram, "/masjid-programs/<int:program_id>")
 api.add_resource(AddCategory, "/madrasa-program-categories")

@@ -110,9 +110,7 @@ class GetMadrasaPrograms(Resource):
         programs = MadrasaPrograms.query.all()
 
         if not programs:
-            return {
-                "message": "No programs found"
-            }, 404
+            return [], 200
 
         result = []
 
@@ -133,16 +131,17 @@ class GetMadrasaPrograms(Resource):
                     "program_name": translation.program_name,
                     "subjects": translation.subjects,
                     "schedule": translation.program_schedule,
-                    "language": translation.language
+                    "language": translation.language,
+                    "image": {
+                        "id": program.image.id,
+                        "url": program.image.url
+                    } if program.image else None
                 })
 
-                if not result:
-                    return {
-                        "message": "No programs found for this language"
-                    }, 404
+        if not result:
+            return [], 200
 
-                return result, 200
-
+        return result, 200
 
 class UpdateMadrasaProgram(Resource):
     parser = reqparse.RequestParser()
@@ -250,9 +249,9 @@ class DeleteMadrasaProgram(Resource):
         program = MadrasaPrograms.query.get(program_id)
 
         if not program:
-            return{
+            return[{
                 "message":"Program not found"
-            }, 404
+            }], 404
 
 # delete the program
 

@@ -60,6 +60,8 @@ class User(db.Model):
 class MasjidPrograms(db.Model):
     __tablename__ = "masjid_programs"
     id = db.Column(db.Integer, primary_key=True)
+    image_id = db.Column(db.Integer, db.ForeignKey("images.id"), nullable=True)
+    image = db.relationship("Image", backref="masjid_programs")
     # program_name = db.Column(db.String(100), nullable=False)
     # program_schedule = db.Column(db.String(500), nullable=False)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
@@ -108,7 +110,8 @@ class MadrasaPrograms(db.Model):
     __tablename__ = "madrasa_programs"
 
     id = db.Column(db.Integer, primary_key=True)
-
+    image_id = db.Column(db.Integer, db.ForeignKey("images.id"), nullable=True)
+    image = db.relationship("Image", backref="madrasa_programs")
     category_id = db.Column(
         db.Integer,
         db.ForeignKey("madrasa_program_categories.id"),
@@ -155,7 +158,7 @@ class Document(db.Model):
     filename = db.Column(db.String(500), nullable=False)
     url = db.Column(db.String(500), nullable=False)
     public_id = db.Column(db.String(500), nullable=False)
-    document_type = db.Column(db.String(50), nullable=False)
+    document_type = db.Column(db.String(50), nullable=True)
     language = db.Column(db.String(10), nullable=True)
     uploaded_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow,onupdate=datetime.utcnow, nullable=False)

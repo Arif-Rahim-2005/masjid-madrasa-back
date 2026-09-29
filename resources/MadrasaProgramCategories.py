@@ -116,7 +116,36 @@ class GetCategories(Resource):
             return {"message": "No categories found for this language"}, 404
 
         return result, 200
+class GetAllMadrasaProgramCategories(Resource):
+    @jwt_required()
+    def get(self):
+        current_user_id = get_jwt_identity()
+        current_user = User.query.get(current_user_id)
 
+        if not current_user:
+            return {"message": "Invalid user"}, 404
+
+        if current_user.role != "admin":
+            return {"message": "Access denied"}, 403
+
+        categories = MadrasaProgramCategories.query.all()
+
+        result = []
+
+        for category in categories:
+            result.append({
+                "id": category.id,
+                "monthly_fee": float(category.monthly_fee),
+                "created_at": category.created_at.isoformat(),
+                "translations": {
+                    translation.language: {
+                        "name": translation.name
+                    }
+                    for translation in category.translations
+                }
+            })
+
+        return result, 200
     
 class UpdateCategory(Resource):
     parser = reqparse.RequestParser()

@@ -50,10 +50,10 @@ class AddDocument(Resource):
 
         document_type = request.form.get("document_type")
 
-        if not document_type:
-            return{
-                "message":"document_type is required"
-            }, 400
+        # if not document_type:
+        #     return{
+        #         "message":"document_type is required"
+        #     }, 400
 
         uploaded_doc = cloudinary.uploader.upload(file, resource_type="raw")
 
@@ -89,9 +89,7 @@ class GetDocuments(Resource):
         documents = Document.query.all()
 
         if not documents:
-            return {
-                "message": "No documents found"
-            }, 404        
+            return [], 200  
 
         result = []
         for document in documents:
@@ -105,7 +103,7 @@ class GetDocuments(Resource):
             "uploaded_at": document.uploaded_at.isoformat()
      }) 
 
-            return result, 200
+        return result, 200
 
 
 class DeleteDocuments(Resource):
