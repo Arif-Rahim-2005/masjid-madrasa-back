@@ -1,3 +1,5 @@
+from html import parser
+
 from flask_restful import Resource, reqparse
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from models import db, User, Announcement, AnnouncementTranslation
@@ -6,6 +8,8 @@ from sqlalchemy.exc import IntegrityError
 
 class AddAnnouncement(Resource):
     parser = reqparse.RequestParser()
+
+    parser.add_argument("image_id", required=False, type=int)
 
     parser.add_argument("title_en", required=True)
     parser.add_argument("content_en", required=True)
@@ -40,7 +44,8 @@ class AddAnnouncement(Resource):
         try:
             # Create the new announcement
             new_announcement = Announcement(
-                created_at=datetime.utcnow()
+                created_at=datetime.utcnow(),
+                image_id=data["image_id"]
                 )
 
             db.session.add(new_announcement)
@@ -172,3 +177,77 @@ class DeleteAnnouncement(Resource):
                 "message":"Error deleting announcement",
                 "Error":str(e)
             }, 400
+
+
+class UpdateAnnouncement(Resource):
+    parser = reqparse.RequestParser()
+
+    parser.add_argument("image_id", required=False, type=int)
+
+    parser.add_argument("title_en", required=False)
+    parser.add_argument("content_en", required=False)
+
+    parser.add_argument("title_sw", required=False)
+    parser.add_argument("content_sw", required=False)
+
+    parser.add_argument("title_ar", required=False)
+    parser.add_argument("content_ar", required=False)
+
+    @jwt_required()
+    def patch(self, announcement_id):
+        current_user_id = get_jwt_identity()
+        current_user = User.query.get(current_user_id)
+
+        if not current_user:
+            return {"message": "Invalid User"}, 404
+
+        if current_user.role != "admin":
+            return {"message": "Access denied"}, 403
+
+        announcement = Announcement.query.get(announcement_id)
+
+        if not announcement:
+            return {"message": "Announcement not found"}, 404
+
+        data = self.parser.parse_args()
+
+        if data["image_id"] is not None:
+            announcement.image_id = data["image_id"]
+
+        translations = {
+            "en": {
+                "title": data["title_en"],
+                "content": data["content_en"]
+            },
+            "sw": {
+                "title": data["title_sw"],
+                "content": data["content_sw"]
+            },
+            "ar": {
+                "title": data["title_ar"],
+                "content": data["content_ar"]
+            }
+        }
+
+        for language, fields in translations.items():
+            translation = next(
+                (
+                    translation
+                    for translation in announcement.translations
+                    if translation.language == language
+                ),
+                None
+            )
+
+            if translation:
+                if fields["title"] is not None:
+                    translation.title = fields["title"]
+
+                if fields["content"] is not None:
+                    translation.content = fields["content"]
+
+        db.session.commit()
+
+        return {
+            "message": "Announcement updated successfully"
+        }, 200

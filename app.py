@@ -14,7 +14,7 @@ from resources.MadrasaProgramCategories import AddCategory, GetAllMadrasaProgram
 from resources.MadrasaPrograms import AddMadrasaProgram, GetMadrasaPrograms, UpdateMadrasaProgram, DeleteMadrasaProgram
 from resources.documents import AddDocument, GetDocuments, DeleteDocuments
 from resources.images import AddImage, GetImages, DeleteImage
-from resources.announcements import AddAnnouncement, GetAnnouncements, DeleteAnnouncement
+from resources.announcements import AddAnnouncement, GetAnnouncements, DeleteAnnouncement, UpdateAnnouncement
 
 
 load_dotenv()
@@ -90,9 +90,10 @@ api.add_resource(DeleteDocuments,"/documents/<int:document_id>")
 api.add_resource(AddImage, "/images")
 api.add_resource(GetImages, "/images")
 api.add_resource(DeleteImage, "/images/<int:image_id>")
-api.add_resource(AddAnnouncement, "/announcements/")
-api.add_resource(GetAnnouncements, "/announcements/")
+api.add_resource(AddAnnouncement, "/announcements")
+api.add_resource(GetAnnouncements, "/announcements")
 api.add_resource(DeleteAnnouncement, "/announcements/<int:announcement_id>")
+api.add_resource(UpdateAnnouncement, "/announcements/<int:announcement_id>")
 
 if __name__ == "__main__":
     app.run(debug=True)

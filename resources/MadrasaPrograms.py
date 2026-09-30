@@ -13,6 +13,7 @@ class AddMadrasaProgram(Resource):
     @jwt_required()
     def post(self):
         parser=reqparse.RequestParser()
+        parser.add_argument("image_id", required=True, type=int)
 
 
         parser.add_argument("category_id", required=True, type=int)
@@ -45,7 +46,8 @@ class AddMadrasaProgram(Resource):
             }, 403
 
         new_program = MadrasaPrograms(
-            category_id = data["category_id"]
+            category_id=data["category_id"],
+            image_id=data["image_id"]
         )
 
         db.session.add(new_program)
@@ -145,6 +147,8 @@ class GetMadrasaPrograms(Resource):
 
 class UpdateMadrasaProgram(Resource):
     parser = reqparse.RequestParser()
+    parser.add_argument("image_id", required=False, type=int)
+    parser.add_argument("category_id", required=False, type=int)
 
     parser.add_argument("name_en", required=False)
     parser.add_argument("subjects_en", required=False)
@@ -181,6 +185,11 @@ class UpdateMadrasaProgram(Resource):
             }, 404
 
         data = self.parser.parse_args()
+        if data["image_id"] is not None:
+            program.image_id = data["image_id"]
+
+        if data["category_id"] is not None:
+            program.category_id = data["category_id"]
 
         translations = {
             "en": {
