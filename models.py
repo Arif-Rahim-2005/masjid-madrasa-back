@@ -229,3 +229,128 @@ class AnnouncementTranslation(db.Model):
             name="uq_announcement_language"
         ),
     )
+
+class AudioCategory(db.Model):
+    __tablename__ = "audio_categories"
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False, unique=True)
+
+    series = db.relationship(
+        "AudioSeries",
+        backref="category",
+        cascade="all, delete-orphan"
+    )
+
+
+class AudioSeries(db.Model):
+    __tablename__ = "audio_series"
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    category_id = db.Column(
+        db.Integer,
+        db.ForeignKey("audio_categories.id"),
+        nullable=False
+    )
+
+    translations = db.relationship(
+        "AudioSeriesTranslation",
+        backref="series",
+        cascade="all, delete-orphan"
+    )
+
+    recordings = db.relationship(
+        "AudioRecording",
+        backref="series",
+        cascade="all, delete-orphan"
+    )
+
+
+class AudioSeriesTranslation(db.Model):
+    __tablename__ = "audio_series_translations"
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    series_id = db.Column(
+        db.Integer,
+        db.ForeignKey("audio_series.id"),
+        nullable=False
+    )
+
+    name = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    language = db.Column(db.String(10), nullable=False)
+
+    __table_args__ = (
+        db.UniqueConstraint(
+            "series_id",
+            "language",
+            name="uq_audio_series_language"
+        ),
+    )
+
+
+class AudioRecording(db.Model):
+    __tablename__ = "audio_recordings"
+
+    id = db.Column(db.Integer, primary_key=True)
+    
+    category_id = db.Column(
+        db.Integer,
+        db.ForeignKey("audio_categories.id"),
+        nullable=False
+    )
+
+    category = db.relationship(
+        "AudioCategory",
+        backref="recordings"
+    )
+    series_id = db.Column(
+        db.Integer,
+        db.ForeignKey("audio_series.id"),
+        nullable=True
+    )
+
+    audio_url = db.Column(db.String(500), nullable=False)
+    public_id = db.Column(db.String(500), nullable=False)
+
+    speaker = db.Column(db.String(200), nullable=True)
+
+    recorded_at = db.Column(db.DateTime, nullable=True)
+
+    uploaded_at = db.Column(
+        db.DateTime,
+        default=datetime.utcnow,
+        nullable=False
+    )
+
+    translations = db.relationship(
+        "AudioRecordingTranslation",
+        backref="recording",
+        cascade="all, delete-orphan"
+    )
+
+
+class AudioRecordingTranslation(db.Model):
+    __tablename__ = "audio_recording_translations"
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    recording_id = db.Column(
+        db.Integer,
+        db.ForeignKey("audio_recordings.id"),
+        nullable=False
+    )
+
+    title = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    language = db.Column(db.String(10), nullable=False)
+
+    __table_args__ = (
+        db.UniqueConstraint(
+            "recording_id",
+            "language",
+            name="uq_audio_recording_language"
+        ),
+    )

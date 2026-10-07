@@ -15,6 +15,8 @@ from resources.MadrasaPrograms import AddMadrasaProgram, GetMadrasaPrograms, Upd
 from resources.documents import AddDocument, GetDocuments, DeleteDocuments
 from resources.images import AddImage, GetImages, DeleteImage
 from resources.announcements import AddAnnouncement, GetAnnouncements, DeleteAnnouncement, UpdateAnnouncement
+from resources.audio import CreateAudioCategory, CreateAudioSeries, DeleteAudioCategory, GetAudioCategories, GetAudioSeries, UpdateAudioCategory, UpdateAudioSeries, DeleteAudioSeries
+from resources.audiorecordings import CreateAudioRecording, GetAudioRecordings, UpdateAudioRecording, DeleteAudioRecording
 
 
 load_dotenv()
@@ -94,6 +96,18 @@ api.add_resource(AddAnnouncement, "/announcements")
 api.add_resource(GetAnnouncements, "/announcements")
 api.add_resource(DeleteAnnouncement, "/announcements/<int:announcement_id>")
 api.add_resource(UpdateAnnouncement, "/announcements/<int:announcement_id>")
+api.add_resource(GetAudioCategories, "/audio-categories")
+api.add_resource(CreateAudioCategory, "/audio-categories")
+api.add_resource(UpdateAudioCategory, "/audio-categories/<int:category_id>")
+api.add_resource(DeleteAudioCategory, "/audio-categories/<int:category_id>")
+api.add_resource(CreateAudioSeries, "/audio-series")
+api.add_resource(GetAudioSeries, "/audio-series/<int:category_id>")
+api.add_resource(UpdateAudioSeries, "/audio-series/<int:series_id>")
+api.add_resource(DeleteAudioSeries, "/audio-series/<int:series_id>")
+api.add_resource(CreateAudioRecording, "/audio-recordings")
+api.add_resource(GetAudioRecordings, "/audio-recordings")
+api.add_resource(UpdateAudioRecording, "/audio-recordings/<int:recording_id>")
+api.add_resource(DeleteAudioRecording, "/audio-recordings/<int:recording_id>")
 
 if __name__ == "__main__":
     app.run(debug=True)
