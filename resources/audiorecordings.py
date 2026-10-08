@@ -124,7 +124,7 @@ class CreateAudioRecording(Resource):
                 "audio_url": recording.audio_url,
                 "public_id": recording.public_id,
                 "speaker": recording.speaker,
-                "recorded_at": recording.recorded_at,
+                "recorded_at": recording.recorded_at.isoformat() if recording.recorded_at else None,
                 "translations": [
                     {
                         "title": translation.title,
