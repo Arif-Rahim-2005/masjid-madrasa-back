@@ -234,12 +234,46 @@ class AudioCategory(db.Model):
     __tablename__ = "audio_categories"
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False, unique=True)
+
+    translations = db.relationship(
+        "AudioCategoryTranslation",
+        backref="category",
+        cascade="all, delete-orphan"
+    )
 
     series = db.relationship(
         "AudioSeries",
         backref="category",
         cascade="all, delete-orphan"
+    )
+
+class AudioCategoryTranslation(db.Model):
+    __tablename__ = "audio_category_translations"
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    category_id = db.Column(
+        db.Integer,
+        db.ForeignKey("audio_categories.id"),
+        nullable=False
+    )
+
+    name = db.Column(
+        db.String(100),
+        nullable=False
+    )
+
+    language = db.Column(
+        db.String(10),
+        nullable=False
+    )
+
+    __table_args__ = (
+        db.UniqueConstraint(
+            "category_id",
+            "language",
+            name="uq_audio_category_language"
+        ),
     )
 
 

@@ -1,25 +1,43 @@
 from flask_restful import Resource, reqparse
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask import request
-from models import User, AudioRecording, AudioCategory, AudioSeries, AudioSeriesTranslation, AudioRecordingTranslation  ,db
+from models import User, AudioRecording, AudioCategory, AudioSeries, AudioSeriesTranslation, AudioRecordingTranslation, AudioCategoryTranslation  ,db
 import os
 import cloudinary
 import cloudinary.uploader
 
 class GetAudioCategories(Resource):
     def get(self):
+        language = request.args.get("language")
+
+        if language not in ["en", "sw", "ar"]:
+            return {"message": "Invalid language"}, 400
+
         categories = AudioCategory.query.all()
 
         if not categories:
             return [], 200
 
-        return [
-            {
-                "id": category.id,
-                "name": category.name
-            }
-            for category in categories
-        ], 200
+        result = []
+
+        for category in categories:
+            translation = next(
+                (
+                    translation
+                    for translation in category.translations
+                    if translation.language == language
+                ),
+                None
+            )
+
+            if translation:
+                result.append({
+                    "id": category.id,
+                    "name": translation.name,
+                    "language": translation.language
+                })
+
+        return result, 200
 
 class CreateAudioCategory(Resource):
     @jwt_required()
@@ -30,33 +48,79 @@ class CreateAudioCategory(Resource):
             return {"message": "Admin access required"}, 403
 
         parser = reqparse.RequestParser()
+
         parser.add_argument(
-            "name",
+            "name_en",
             type=str,
             required=True,
-            help="Name is required"
+            help="English category name is required"
+        )
+
+        parser.add_argument(
+            "name_sw",
+            type=str,
+            required=True,
+            help="Swahili category name is required"
+        )
+
+        parser.add_argument(
+            "name_ar",
+            type=str,
+            required=True,
+            help="Arabic category name is required"
         )
 
         data = parser.parse_args()
-        name = data["name"].strip()
 
-        if not name:
-            return {"message": "Name cannot be empty"}, 400
+        names = [
+            data["name_en"],
+            data["name_sw"],
+            data["name_ar"]
+        ]
 
-        existing_category = AudioCategory.query.filter_by(name=name).first()
+        if any(not name or not name.strip() for name in names):
+            return {
+                "message": "Category names cannot be empty"
+            }, 400
 
-        if existing_category:
-            return {"message": "Category already exists"}, 409
-
-        category = AudioCategory(name=name)
+        category = AudioCategory()
 
         db.session.add(category)
+        db.session.flush()
+
+        translations = [
+            AudioCategoryTranslation(
+                category_id=category.id,
+                name=data["name_en"].strip(),
+                language="en"
+            ),
+            AudioCategoryTranslation(
+                category_id=category.id,
+                name=data["name_sw"].strip(),
+                language="sw"
+            ),
+            AudioCategoryTranslation(
+                category_id=category.id,
+                name=data["name_ar"].strip(),
+                language="ar"
+            )
+        ]
+
+        db.session.add_all(translations)
         db.session.commit()
 
         return {
             "id": category.id,
-            "name": category.name
+            "translations": [
+                {
+                    "name": translation.name,
+                    "language": translation.language
+                }
+                for translation in translations
+            ]
         }, 201
+
+    
 class UpdateAudioCategory(Resource):
     @jwt_required()
     def patch(self, category_id):
@@ -71,30 +135,67 @@ class UpdateAudioCategory(Resource):
             return {"message": "Category not found"}, 404
 
         parser = reqparse.RequestParser()
-        parser.add_argument("name", type=str, required=True)
+
+        parser.add_argument("name_en", type=str)
+        parser.add_argument("name_sw", type=str)
+        parser.add_argument("name_ar", type=str)
 
         data = parser.parse_args()
-        name = data["name"].strip()
 
-        if not name:
-            return {"message": "Name cannot be empty"}, 400
+        language_data = {
+            "en": data["name_en"],
+            "sw": data["name_sw"],
+            "ar": data["name_ar"]
+        }
 
-        existing_category = AudioCategory.query.filter(
-            AudioCategory.name == name,
-            AudioCategory.id != category_id
-        ).first()
+        for language, name in language_data.items():
 
-        if existing_category:
-            return {"message": "Category already exists"}, 409
+            if name is None:
+                continue
 
-        category.name = name
+            name = name.strip()
+
+            if not name:
+                return {
+                    "message": f"{language} category name cannot be empty"
+                }, 400
+
+            translation = next(
+                (
+                    translation
+                    for translation in category.translations
+                    if translation.language == language
+                ),
+                None
+            )
+
+            # Create missing translation if this is an old category
+            if not translation:
+                translation = AudioCategoryTranslation(
+                    category_id=category.id,
+                    name=name,
+                    language=language
+                )
+
+                db.session.add(translation)
+
+            else:
+                translation.name = name
+
         db.session.commit()
 
         return {
             "id": category.id,
-            "name": category.name
+            "translations": [
+                {
+                    "name": translation.name,
+                    "language": translation.language
+                }
+                for translation in category.translations
+            ]
         }, 200
 
+    
 class DeleteAudioCategory(Resource):
     @jwt_required()
     def delete(self, category_id):
