@@ -111,9 +111,7 @@ class GetAnnouncements(Resource):
         announcements = Announcement.query.all()
 
         if not announcements:
-            return{
-                "message":"No announcements found"
-            }, 404
+            return [], 200
 
         result = []
 
