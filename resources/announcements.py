@@ -108,8 +108,9 @@ class GetAnnouncements(Resource):
                 "message":"Invalid Language"
             }, 400
 
-        announcements = Announcement.query.all()
-
+        announcements = Announcement.query.order_by(
+            Announcement.created_at.desc()
+        ).all()
         if not announcements:
             return [], 200
 
@@ -131,7 +132,9 @@ class GetAnnouncements(Resource):
                     "title": translation.title,
                     "content": translation.content,
                     "image_id": announcement.image_id,
-                    "language": translation.language
+                    "language": translation.language,
+                    "created_at": announcement.created_at.isoformat() if announcement.created_at else None,
+
                 })
 
         return result, 200
